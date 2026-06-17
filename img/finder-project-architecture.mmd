@@ -1,0 +1,28 @@
+flowchart LR
+  Flickr[Flickr<br/>照片與相簿來源]
+  Sheets[Google Sheets<br/>正式照片索引]
+  AppsScript[Apps Script<br/>Sheets 內維護輔助]
+  Pages[公開搜尋前端<br/>唯讀找圖介面]
+  AI[AI 助手與 agent<br/>找圖與標記候選]
+  Users[籌備團隊與公開使用者]
+
+  subgraph Project[這個專案提供的能力]
+    Rules[資料規則<br/>schema / taxonomy / 欄位文件]
+    Intake[匯入與同步工具<br/>相簿盤點 / intake / validation]
+    Interfaces[使用介面原始碼<br/>GitHub Pages / Apps Script]
+    AIGuide[AI 輔助流程<br/>prompt / run artifact / report]
+  end
+
+  Flickr -->|相簿與照片 metadata| Intake
+  Rules --> Intake
+  Intake -->|候選列與同步計畫| Sheets
+  Interfaces -->|clasp deploy| AppsScript
+  Interfaces -->|GitHub Actions artifact| Pages
+  Rules --> AppsScript
+  AppsScript -->|提示與校對| Sheets
+  Sheets -->|build-time 公開 CSV / static artifact| Pages
+  Sheets -->|公開 photos CSV / Sheet| AI
+  AIGuide -->|輸入規則與報表| AI
+  AI -->|找圖建議或候選標註| Users
+  Pages -->|搜尋與篩選| Users
+  Users -->|確認後編輯| Sheets

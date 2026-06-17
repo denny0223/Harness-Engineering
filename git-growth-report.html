@@ -1,0 +1,806 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>SITCON Flickr Photo Finder Git 成長報表</title>
+  <style>
+:root {
+  color-scheme: light;
+  --bg: #f5f8fb;
+  --panel: rgba(255, 255, 255, 0.94);
+  --panel-strong: #fff;
+  --text: #142033;
+  --muted: #647184;
+  --line: #dbe4ee;
+  --soft-line: #edf2f7;
+  --strong: #101828;
+  --blue: #2563eb;
+  --teal: #14b8a6;
+  --amber: #f59e0b;
+  --rose: #f43f5e;
+  --shadow: 0 18px 50px rgba(16, 24, 40, 0.09);
+  --soft-shadow: 0 10px 28px rgba(16, 24, 40, 0.07);
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: linear-gradient(180deg, #fbfdfc 0%, #eef5f8 48%, #f7f8fb 100%);
+  color: var(--text);
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  line-height: 1.55;
+}
+main {
+  width: min(1210px, calc(100vw - 32px));
+  margin: 0 auto;
+  padding: 34px 0 64px;
+}
+header {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 18px;
+  align-items: end;
+  margin-bottom: 18px;
+}
+h1 {
+  margin: 0 0 8px;
+  color: var(--strong);
+  font-size: clamp(31px, 4.2vw, 48px);
+  line-height: 1.06;
+  letter-spacing: 0;
+}
+h2 {
+  margin: 30px 0 12px;
+  color: var(--strong);
+  font-size: 22px;
+}
+p { margin: 0 0 10px; }
+code {
+  padding: 1px 5px;
+  border: 1px solid #d9eaff;
+  border-radius: 4px;
+  background: #eff7ff;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.92em;
+}
+.muted { color: var(--muted); }
+.source-pill {
+  justify-self: end;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.72);
+  color: var(--muted);
+  box-shadow: var(--soft-shadow);
+}
+.summary-grid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 12px;
+  margin: 18px 0 22px;
+}
+.metric {
+  min-height: 116px;
+  padding: 17px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--panel);
+  box-shadow: var(--soft-shadow);
+}
+.metric dt {
+  margin-bottom: 8px;
+  color: var(--muted);
+  font-size: 13px;
+}
+.metric dd {
+  margin: 0;
+  color: var(--strong);
+  font-size: 25px;
+  font-weight: 760;
+}
+.metric small {
+  display: block;
+  margin-top: 6px;
+  color: var(--muted);
+  font-size: 12px;
+}
+.panel {
+  margin-top: 14px;
+  padding: 18px;
+  overflow-x: auto;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--panel);
+  box-shadow: var(--shadow);
+}
+.chart-panel { padding: 12px 16px 16px; }
+.chart-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 14px;
+  margin-bottom: 8px;
+}
+.chart-note {
+  color: var(--muted);
+  font-size: 13px;
+}
+.chart {
+  display: block;
+  width: 100%;
+  min-width: 860px;
+  height: auto;
+}
+.chart-bg { fill: #fff; }
+.plot-bg { fill: #fbfdff; }
+.grid { stroke: #e6edf5; stroke-width: 1; }
+.axis-label, .axis-title, .legend text, .date-label {
+  fill: #556273;
+  font-size: 12.5px;
+}
+.axis-title { font-weight: 720; }
+.series-line {
+  fill: none;
+  stroke-width: 3;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+.dot { stroke: #fff; stroke-width: 2; }
+.bar { rx: 3; }
+.area { opacity: 0.84; pointer-events: none; }
+.chart-mark, .chart-label, .hover-band, .legend-item {
+  transition: opacity 140ms ease, fill 140ms ease, stroke 140ms ease, filter 140ms ease;
+}
+.hover-band {
+  fill: transparent;
+  cursor: crosshair;
+  outline: none;
+  pointer-events: all;
+}
+.hover-band.is-date-hovered, .hover-band:focus { fill: rgba(37, 99, 235, 0.08); }
+.legend-item {
+  cursor: pointer;
+  outline: none;
+}
+.legend-hit { fill: transparent; }
+.legend-swatch-line { fill: none; stroke-width: 3; stroke-linecap: round; }
+.legend-item:hover .legend-hit, .legend-item:focus .legend-hit, .legend-item.is-legend-hovered .legend-hit {
+  fill: rgba(37, 99, 235, 0.1);
+}
+.legend-item.is-hidden { opacity: 0.42; }
+.legend-item.is-hidden text { text-decoration: line-through; }
+.chart.has-date-hover .chart-mark[data-date], .chart.has-date-hover .chart-label[data-date] { opacity: 0.24; }
+.chart.has-date-hover .chart-mark.is-date-hovered, .chart.has-date-hover .chart-label.is-date-hovered { opacity: 1; }
+.chart.has-date-hover .chart-mark.is-date-hovered {
+  filter: drop-shadow(0 3px 5px rgba(16, 24, 40, 0.24));
+  stroke: #111827;
+  stroke-width: 2;
+}
+.chart.has-series-hover [data-series] { opacity: 0.18; }
+.chart.has-series-hover [data-series].is-series-hovered {
+  opacity: 1;
+  filter: drop-shadow(0 3px 5px rgba(16, 24, 40, 0.2));
+}
+.insight-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+details {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.8);
+}
+summary {
+  cursor: pointer;
+  padding: 14px 16px;
+  color: var(--strong);
+  font-weight: 740;
+}
+.method {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  padding: 0 16px 16px;
+}
+.method div {
+  padding: 12px;
+  border: 1px solid var(--soft-line);
+  border-radius: 8px;
+  background: #f8fbfd;
+}
+.method strong {
+  display: block;
+  margin-bottom: 4px;
+}
+table {
+  width: 100%;
+  min-width: 760px;
+  border-collapse: collapse;
+}
+th, td {
+  padding: 10px 12px;
+  border-bottom: 1px solid #e4ebf2;
+  text-align: left;
+  vertical-align: top;
+  font-size: 14px;
+}
+th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: #f8fbfd;
+  color: #38465a;
+  font-size: 13px;
+}
+.positive { color: #0f9f6e; font-weight: 740; }
+.negative { color: #d92d55; font-weight: 740; }
+.chart-tooltip {
+  position: fixed;
+  z-index: 20;
+  display: none;
+  max-width: min(380px, calc(100vw - 24px));
+  padding: 11px 13px;
+  color: #f8fbff;
+  background: rgba(16, 24, 40, 0.94);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 8px;
+  box-shadow: 0 18px 38px rgba(16, 24, 40, 0.26);
+  font-size: 13px;
+  line-height: 1.45;
+  pointer-events: none;
+  white-space: pre-line;
+}
+.chart-tooltip.is-visible { display: block; }
+.chart-tooltip-title {
+  margin-bottom: 6px;
+  color: #fff;
+  font-weight: 760;
+}
+.chart-tooltip-body { color: #d7f7ff; }
+@media (max-width: 820px) {
+  main {
+    width: min(100vw - 20px, 1210px);
+    padding-top: 24px;
+  }
+  header { display: block; }
+  h1 {
+    font-size: 29px;
+    line-height: 1.12;
+  }
+  .source-pill {
+    justify-self: auto;
+    margin-top: 12px;
+    padding: 9px 10px;
+    font-size: 14px;
+  }
+  .summary-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+  }
+  .summary-grid .metric:first-child {
+    grid-column: 1 / -1;
+  }
+  .insight-grid, .method { grid-template-columns: 1fr; }
+  .metric {
+    min-height: 86px;
+    padding: 12px;
+  }
+  .metric dt {
+    margin-bottom: 5px;
+  }
+  .metric dd {
+    font-size: 21px;
+  }
+  .summary-grid .metric:first-child dd {
+    font-size: 24px;
+  }
+  .metric small {
+    margin-top: 3px;
+  }
+  .chart-head {
+    position: sticky;
+    left: 0;
+    display: block;
+    padding-bottom: 8px;
+    background: linear-gradient(90deg, var(--panel) 78%, rgba(255,255,255,0));
+  }
+  .chart-note { display: block; margin-top: 4px; }
+  .chart { min-width: 880px; }
+  .panel { padding: 14px; }
+}
+</style>
+</head>
+<body>
+  <main>
+    <header>
+      <div>
+        <h1>Git 成長與程式碼行數報表</h1>
+        <p class="muted">儲存庫：<code>/home/denny/repo/SITCON/flickr-photo-finder-tools</code></p>
+      </div>
+      <div class="source-pill">資料來源 <code>master</code> @ <code>6003220</code><br>docs: add security policy<br>產生時間 <code>2026-05-18T16:11:22.174Z</code></div>
+    </header>
+
+    <section class="summary-grid" aria-label="摘要">
+      <dl class="metric"><dt>日期範圍</dt><dd>2026-05-08 → 2026-05-18</dd><small>依 commit 日期分日</small></dl>
+      <dl class="metric"><dt>可達 commit 數</dt><dd>424</dd><small>主線快照 343</small></dl>
+      <dl class="metric"><dt>目前程式碼+測試非空行</dt><dd>31,981</dd><small>最近一日 +4</small></dl>
+      <dl class="metric"><dt>目前文字非空行</dt><dd>42,487</dd><small>文字檔 245 個</small></dl>
+      <dl class="metric"><dt>最大成長日</dt><dd>2026-05-09</dd><small>程式碼+測試 +9,757 行</small></dl>
+    </section>
+
+    <section class="panel chart-panel">
+      <div class="chart-head">
+        <h2>成長節奏總覽</h2>
+        <span class="chart-note">點選圖例會重新計算尺度；雙擊只看單一系列；Esc 還原。</span>
+      </div>
+      <svg class="chart" data-chart="overview" viewBox="0 0 1120 720" role="img" aria-label="每日 commit 數、累積 commit 數與程式碼測試非空行成長"></svg>
+    </section>
+
+    <section class="insight-grid">
+      <div class="panel">
+        <h2>程式碼+測試行數增量前五名</h2>
+        <table><thead><tr><th>#</th><th>日期</th><th>增量</th><th>當日快照</th></tr></thead><tbody><tr><td>1</td><td>2026-05-09</td><td class="positive">+9,757</td><td>9dc32f0 fix(apps-script): allow sidebar UI scope</td></tr><tr><td>2</td><td>2026-05-11</td><td class="positive">+6,532</td><td>10bb754 docs: update sheets workflow screenshot</td></tr><tr><td>3</td><td>2026-05-10</td><td class="positive">+3,434</td><td>9d50219 docs: document LLM-based photo search</td></tr><tr><td>4</td><td>2026-05-12</td><td class="positive">+2,579</td><td>1a2ef50 Merge branch 'data-public-field-sensitive-warnings'</td></tr><tr><td>5</td><td>2026-05-14</td><td class="positive">+2,446</td><td>3c89378 merge: integrate AI Codex metering</td></tr></tbody></table>
+      </div>
+      <div class="panel">
+        <h2>commit 數前五名</h2>
+        <table><thead><tr><th>#</th><th>日期</th><th>commit 數</th><th>當日快照</th></tr></thead><tbody><tr><td>1</td><td>2026-05-10</td><td class="positive">+100</td><td>9d50219 docs: document LLM-based photo search</td></tr><tr><td>2</td><td>2026-05-09</td><td class="positive">+96</td><td>9dc32f0 fix(apps-script): allow sidebar UI scope</td></tr><tr><td>3</td><td>2026-05-11</td><td class="positive">+51</td><td>10bb754 docs: update sheets workflow screenshot</td></tr><tr><td>4</td><td>2026-05-08</td><td class="positive">+43</td><td>a154519 feat: add sheets-ready album sync</td></tr><tr><td>5</td><td>2026-05-13</td><td class="positive">+39</td><td>fc06e25 merge: integrate shared value governance registry</td></tr></tbody></table>
+      </div>
+    </section>
+
+    <section class="panel chart-panel">
+      <div class="chart-head">
+        <h2>文字行數分類</h2>
+        <span class="chart-note">全期為 0 的分類不顯示於圖例。</span>
+      </div>
+      <svg class="chart" data-chart="categories" viewBox="0 0 1120 520" role="img" aria-label="文字非空行分類成長"></svg>
+    </section>
+
+    <section class="panel chart-panel">
+      <div class="chart-head">
+        <h2>每日 commit 類型</h2>
+        <span class="chart-note">feat 109 · fix 99 · docs 124 · test 9 · refactor 14 · chore 26 · ci 5 · merge 24 · other 14</span>
+      </div>
+      <svg class="chart" data-chart="commit-types" viewBox="0 0 1120 460" role="img" aria-label="每日 commit 類型堆疊圖"></svg>
+    </section>
+
+    <section class="panel">
+      <h2>每日明細</h2>
+      <table><thead><tr><th>日期</th><th>當日 commit 數</th><th>累積 commit 數</th><th>程式碼+測試增量</th><th>程式碼+測試非空行</th><th>全部文字非空行</th><th>主線快照</th></tr></thead><tbody><tr>
+        <td>2026-05-08</td>
+        <td>43</td>
+        <td>43</td>
+        <td class="positive">+1,950</td>
+        <td>1,950</td>
+        <td>4,803</td>
+        <td><code>a154519</code> feat: add sheets-ready album sync</td>
+      </tr><tr>
+        <td>2026-05-09</td>
+        <td>96</td>
+        <td>139</td>
+        <td class="positive">+9,757</td>
+        <td>11,707</td>
+        <td>17,575</td>
+        <td><code>9dc32f0</code> fix(apps-script): allow sidebar UI scope</td>
+      </tr><tr>
+        <td>2026-05-10</td>
+        <td>100</td>
+        <td>239</td>
+        <td class="positive">+3,434</td>
+        <td>15,141</td>
+        <td>21,908</td>
+        <td><code>9d50219</code> docs: document LLM-based photo search</td>
+      </tr><tr>
+        <td>2026-05-11</td>
+        <td>51</td>
+        <td>290</td>
+        <td class="positive">+6,532</td>
+        <td>21,673</td>
+        <td>29,627</td>
+        <td><code>10bb754</code> docs: update sheets workflow screenshot</td>
+      </tr><tr>
+        <td>2026-05-12</td>
+        <td>34</td>
+        <td>324</td>
+        <td class="positive">+2,579</td>
+        <td>24,252</td>
+        <td>32,732</td>
+        <td><code>1a2ef50</code> Merge branch 'data-public-field-sensitive-warnings'</td>
+      </tr><tr>
+        <td>2026-05-13</td>
+        <td>39</td>
+        <td>363</td>
+        <td class="positive">+1,987</td>
+        <td>26,239</td>
+        <td>35,290</td>
+        <td><code>fc06e25</code> merge: integrate shared value governance registry</td>
+      </tr><tr>
+        <td>2026-05-14</td>
+        <td>9</td>
+        <td>372</td>
+        <td class="positive">+2,446</td>
+        <td>28,685</td>
+        <td>38,007</td>
+        <td><code>3c89378</code> merge: integrate AI Codex metering</td>
+      </tr><tr>
+        <td>2026-05-15</td>
+        <td>14</td>
+        <td>386</td>
+        <td class="positive">+302</td>
+        <td>28,987</td>
+        <td>38,351</td>
+        <td><code>f152454</code> fix(ci): bound mobile filter smoke runtime</td>
+      </tr><tr>
+        <td>2026-05-16</td>
+        <td>14</td>
+        <td>400</td>
+        <td class="positive">+1,179</td>
+        <td>30,166</td>
+        <td>40,077</td>
+        <td><code>42db4d7</code> docs(ai): require worker delegation for large runs</td>
+      </tr><tr>
+        <td>2026-05-17</td>
+        <td>22</td>
+        <td>422</td>
+        <td class="positive">+1,811</td>
+        <td>31,977</td>
+        <td>42,421</td>
+        <td><code>f7d2fd8</code> test: enforce Taiwan Traditional Chinese wording</td>
+      </tr><tr>
+        <td>2026-05-18</td>
+        <td>2</td>
+        <td>424</td>
+        <td class="positive">+4</td>
+        <td>31,981</td>
+        <td>42,487</td>
+        <td><code>6003220</code> docs: add security policy</td>
+      </tr></tbody></table>
+    </section>
+
+    <section class="panel">
+      <details>
+        <summary>統計說明與忽略規則</summary>
+        <div class="method">
+          <div><strong>統計口徑</strong>Commit 數採用 <code>master</code> 可達的全部 commit，依 commit 日期分日；每日行數快照採該日最後一個主線 commit。</div>
+          <div><strong>忽略邊界</strong>每個快照先用 <code>git ls-tree</code> 讀取 Git 追蹤檔，再用目前 <code>.gitignore</code> 透過 <code>git check-ignore --no-index</code> 二次排除。</div>
+          <div><strong>行數定義</strong>使用 UTF-8 文字檔的非空行。PNG/JPG/WebP/PDF 等 binary asset 不進行數。</div>
+          <div><strong>目前被排除的 ignored 入口</strong><code>apps-script/.clasp.json</code> <code>credentials.json</code> <code>node_modules/</code> <code>tmp/</code></div>
+        </div>
+      </details>
+    </section>
+  </main>
+  <script>
+(() => {
+  const data = {"rows":[{"date":"2026-05-08","commits":43,"cumulativeCommits":43,"types":{"feat":6,"fix":0,"docs":21,"test":0,"refactor":1,"chore":1,"ci":0,"merge":0,"other":14},"snapshot":{"date":"2026-05-08","commit":"a1545196b5750eab1eda6c0b8c1b649f16d1a463","shortCommit":"a154519","subject":"feat: add sheets-ready album sync","categories":{"source":1950,"tests":0,"docs":1443,"data":1382,"config":22,"generated":6,"assets":0,"other":0},"countedFiles":39,"ignoredTrackedFiles":0,"textLines":4803,"sourceLines":1950},"commitDelta":43,"sourceDelta":1950,"textDelta":4803,"categoryDeltas":{"source":1950,"tests":0,"docs":1443,"data":1382,"config":22,"generated":6,"assets":0,"other":0}},{"date":"2026-05-09","commits":96,"cumulativeCommits":139,"types":{"feat":40,"fix":20,"docs":28,"test":0,"refactor":0,"chore":4,"ci":3,"merge":1,"other":0},"snapshot":{"date":"2026-05-09","commit":"9dc32f00224de9938a3446e3e08fb281d866a4f7","shortCommit":"9dc32f0","subject":"fix(apps-script): allow sidebar UI scope","categories":{"source":11707,"tests":0,"docs":3339,"data":1998,"config":234,"generated":297,"assets":0,"other":0},"countedFiles":116,"ignoredTrackedFiles":0,"textLines":17575,"sourceLines":11707},"commitDelta":53,"sourceDelta":9757,"textDelta":12772,"categoryDeltas":{"source":9757,"tests":0,"docs":1896,"data":616,"config":212,"generated":291,"assets":0,"other":0}},{"date":"2026-05-10","commits":100,"cumulativeCommits":239,"types":{"feat":22,"fix":30,"docs":27,"test":0,"refactor":0,"chore":17,"ci":0,"merge":4,"other":0},"snapshot":{"date":"2026-05-10","commit":"9d50219b3ac81f1002d0b4787d7c5b2b9029193f","shortCommit":"9d50219","subject":"docs: document LLM-based photo search","categories":{"source":15141,"tests":0,"docs":3871,"data":2127,"config":239,"generated":530,"assets":0,"other":0},"countedFiles":124,"ignoredTrackedFiles":0,"textLines":21908,"sourceLines":15141},"commitDelta":4,"sourceDelta":3434,"textDelta":4333,"categoryDeltas":{"source":3434,"tests":0,"docs":532,"data":129,"config":5,"generated":233,"assets":0,"other":0}},{"date":"2026-05-11","commits":51,"cumulativeCommits":290,"types":{"feat":16,"fix":20,"docs":12,"test":0,"refactor":1,"chore":2,"ci":0,"merge":0,"other":0},"snapshot":{"date":"2026-05-11","commit":"10bb754366d4a34f94d15e97d927732d1aa2806f","shortCommit":"10bb754","subject":"docs: update sheets workflow screenshot","categories":{"source":21673,"tests":0,"docs":4634,"data":2479,"config":311,"generated":530,"assets":0,"other":0},"countedFiles":163,"ignoredTrackedFiles":0,"textLines":29627,"sourceLines":21673},"commitDelta":-49,"sourceDelta":6532,"textDelta":7719,"categoryDeltas":{"source":6532,"tests":0,"docs":763,"data":352,"config":72,"generated":0,"assets":0,"other":0}},{"date":"2026-05-12","commits":34,"cumulativeCommits":324,"types":{"feat":8,"fix":3,"docs":8,"test":2,"refactor":9,"chore":0,"ci":1,"merge":3,"other":0},"snapshot":{"date":"2026-05-12","commit":"1a2ef5015e47a487705fe994cb0d7caaeded93b9","shortCommit":"1a2ef50","subject":"Merge branch 'data-public-field-sensitive-warnings'","categories":{"source":23915,"tests":337,"docs":5100,"data":2538,"config":312,"generated":530,"assets":0,"other":0},"countedFiles":188,"ignoredTrackedFiles":0,"textLines":32732,"sourceLines":24252},"commitDelta":-17,"sourceDelta":2579,"textDelta":3105,"categoryDeltas":{"source":2242,"tests":337,"docs":466,"data":59,"config":1,"generated":0,"assets":0,"other":0}},{"date":"2026-05-13","commits":39,"cumulativeCommits":363,"types":{"feat":5,"fix":15,"docs":9,"test":0,"refactor":2,"chore":1,"ci":1,"merge":6,"other":0},"snapshot":{"date":"2026-05-13","commit":"fc06e25cc0dd5f219d852357fb9bbcf747060c85","shortCommit":"fc06e25","subject":"merge: integrate shared value governance registry","categories":{"source":25673,"tests":566,"docs":5235,"data":2954,"config":332,"generated":530,"assets":0,"other":0},"countedFiles":213,"ignoredTrackedFiles":0,"textLines":35290,"sourceLines":26239},"commitDelta":5,"sourceDelta":1987,"textDelta":2558,"categoryDeltas":{"source":1758,"tests":229,"docs":135,"data":416,"config":20,"generated":0,"assets":0,"other":0}},{"date":"2026-05-14","commits":9,"cumulativeCommits":372,"types":{"feat":3,"fix":1,"docs":2,"test":0,"refactor":0,"chore":0,"ci":0,"merge":3,"other":0},"snapshot":{"date":"2026-05-14","commit":"3c893782e48661cf8304f3d1816e51072243a2e1","shortCommit":"3c89378","subject":"merge: integrate AI Codex metering","categories":{"source":27824,"tests":861,"docs":5504,"data":2954,"config":334,"generated":530,"assets":0,"other":0},"countedFiles":220,"ignoredTrackedFiles":0,"textLines":38007,"sourceLines":28685},"commitDelta":-30,"sourceDelta":2446,"textDelta":2717,"categoryDeltas":{"source":2151,"tests":295,"docs":269,"data":0,"config":2,"generated":0,"assets":0,"other":0}},{"date":"2026-05-15","commits":14,"cumulativeCommits":386,"types":{"feat":3,"fix":6,"docs":3,"test":0,"refactor":1,"chore":1,"ci":0,"merge":0,"other":0},"snapshot":{"date":"2026-05-15","commit":"f152454d9e84379c0ce33f909e943b285b676342","shortCommit":"f152454","subject":"fix(ci): bound mobile filter smoke runtime","categories":{"source":28003,"tests":984,"docs":5543,"data":2954,"config":337,"generated":530,"assets":0,"other":0},"countedFiles":221,"ignoredTrackedFiles":0,"textLines":38351,"sourceLines":28987},"commitDelta":5,"sourceDelta":302,"textDelta":344,"categoryDeltas":{"source":179,"tests":123,"docs":39,"data":0,"config":3,"generated":0,"assets":0,"other":0}},{"date":"2026-05-16","commits":14,"cumulativeCommits":400,"types":{"feat":3,"fix":1,"docs":7,"test":1,"refactor":0,"chore":0,"ci":0,"merge":2,"other":0},"snapshot":{"date":"2026-05-16","commit":"42db4d7068b67a12936f038f0495b9ef6d69950b","shortCommit":"42db4d7","subject":"docs(ai): require worker delegation for large runs","categories":{"source":29068,"tests":1098,"docs":5861,"data":3182,"config":338,"generated":530,"assets":0,"other":0},"countedFiles":236,"ignoredTrackedFiles":0,"textLines":40077,"sourceLines":30166},"commitDelta":0,"sourceDelta":1179,"textDelta":1726,"categoryDeltas":{"source":1065,"tests":114,"docs":318,"data":228,"config":1,"generated":0,"assets":0,"other":0}},{"date":"2026-05-17","commits":22,"cumulativeCommits":422,"types":{"feat":3,"fix":2,"docs":6,"test":6,"refactor":0,"chore":0,"ci":0,"merge":5,"other":0},"snapshot":{"date":"2026-05-17","commit":"f7d2fd84dda60b17e21935a450e2cbdd349d742d","shortCommit":"f7d2fd8","subject":"test: enforce Taiwan Traditional Chinese wording","categories":{"source":30522,"tests":1455,"docs":6390,"data":3183,"config":341,"generated":530,"assets":0,"other":0},"countedFiles":244,"ignoredTrackedFiles":0,"textLines":42421,"sourceLines":31977},"commitDelta":8,"sourceDelta":1811,"textDelta":2344,"categoryDeltas":{"source":1454,"tests":357,"docs":529,"data":1,"config":3,"generated":0,"assets":0,"other":0}},{"date":"2026-05-18","commits":2,"cumulativeCommits":424,"types":{"feat":0,"fix":1,"docs":1,"test":0,"refactor":0,"chore":0,"ci":0,"merge":0,"other":0},"snapshot":{"date":"2026-05-18","commit":"6003220c9dc4ff2b661d1016431ee6eff1bb9249","shortCommit":"6003220","subject":"docs: add security policy","categories":{"source":30526,"tests":1455,"docs":6452,"data":3183,"config":341,"generated":530,"assets":0,"other":0},"countedFiles":245,"ignoredTrackedFiles":0,"textLines":42487,"sourceLines":31981},"commitDelta":-20,"sourceDelta":4,"textDelta":66,"categoryDeltas":{"source":4,"tests":0,"docs":62,"data":0,"config":0,"generated":0,"assets":0,"other":0}}],"visibleCategoryOrder":["source","tests","docs","data","config","generated"],"categoryLabels":{"source":"程式碼","tests":"測試","docs":"文件","data":"資料/範例","config":"設定/CI","generated":"鎖定/產物","assets":"文字資產","other":"其他文字"},"categoryColors":{"source":"#2563eb","tests":"#10b981","docs":"#f59e0b","data":"#f43f5e","config":"#8b5cf6","generated":"#64748b","assets":"#14b8a6","other":"#d946ef"},"commitTypeOrder":["feat","fix","docs","test","refactor","chore","ci","merge","other"],"commitTypeColors":{"feat":"#2563eb","fix":"#f43f5e","docs":"#f59e0b","test":"#10b981","refactor":"#8b5cf6","chore":"#64748b","ci":"#06b6d4","merge":"#a855f7","other":"#475569"}};
+  const state = {
+    overview: new Set(["daily-commits", "cumulative-commits", "source-lines"]),
+    categories: new Set(data.visibleCategoryOrder),
+    "commit-types": new Set(data.commitTypeOrder),
+  };
+  const overviewSeries = [
+    { key: "daily-commits", label: "每日 commit 數", color: "#8ec5ff", kind: "bar" },
+    { key: "cumulative-commits", label: "累積 commit 數", color: "#2563eb", kind: "line" },
+    { key: "source-lines", label: "程式碼+測試非空行", color: "#14b8a6", kind: "line" },
+  ];
+  const tooltip = document.createElement("div");
+  tooltip.className = "chart-tooltip";
+  tooltip.setAttribute("role", "status");
+  tooltip.setAttribute("aria-live", "polite");
+  document.body.appendChild(tooltip);
+
+  const fmt = (value) => Number(value).toLocaleString("en-US");
+  const esc = (value) => String(value).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  const attr = (value) => esc(value).replace(/"/g, "&quot;").replace(/\n/g, "&#10;");
+  const max = (values) => Math.max(1, ...values.filter(Number.isFinite));
+  const ticks = (maxValue, count = 4) => {
+    const raw = Math.max(1, maxValue) / count;
+    const mag = 10 ** Math.floor(Math.log10(raw));
+    const norm = raw / mag;
+    const step = norm <= 1 ? mag : norm <= 2 ? 2 * mag : norm <= 5 ? 5 * mag : 10 * mag;
+    const out = [];
+    for (let value = 0; value <= maxValue + step; value += step) out.push(value);
+    return out.slice(0, count + 2);
+  };
+  const attrs = (date, title, body) => 'data-date="' + attr(date) + '" data-tooltip-title="' + attr(title) + '" data-tooltip-body="' + attr(body) + '"';
+
+  function legendItem(item, active, x, y, width = 178) {
+    const hidden = active ? "" : " is-hidden";
+    const ariaPressed = active ? "false" : "true";
+    const swatch = item.kind === "line"
+      ? '<line class="legend-swatch-line" x1="' + x + '" y1="' + (y - 6) + '" x2="' + (x + 42) + '" y2="' + (y - 6) + '" stroke="' + item.color + '"></line>'
+      : '<rect class="legend-swatch" x="' + x + '" y="' + (y - 12) + '" width="18" height="12" fill="' + item.color + '"></rect>';
+    const textX = item.kind === "line" ? x + 52 : x + 26;
+    return '<g class="legend-item' + hidden + '" data-legend-series="' + attr(item.key) + '" tabindex="0" role="button" aria-pressed="' + ariaPressed + '" aria-label="顯示或隱藏 ' + attr(item.label) + '">' +
+      '<rect class="legend-hit" x="' + (x - 8) + '" y="' + (y - 22) + '" width="' + width + '" height="28" rx="6"></rect>' +
+      swatch + '<text x="' + textX + '" y="' + y + '">' + esc(item.label) + '</text></g>';
+  }
+
+  function dateLabel(x, y, date) {
+    return '<text class="date-label chart-label" data-date="' + attr(date) + '" transform="translate(' + x + ',' + y + ') rotate(-35)" text-anchor="end">' + date.slice(5) + '</text>';
+  }
+
+  function tooltipBody(row, keys) {
+    const lines = [];
+    if (keys.has("daily-commits")) lines.push("每日 commit 數: " + fmt(row.commits) + "（較前一日 " + signed(row.commitDelta) + "）");
+    if (keys.has("cumulative-commits")) lines.push("累積 commit 數: " + fmt(row.cumulativeCommits));
+    if (keys.has("source-lines")) lines.push("程式碼+測試非空行: " + fmt(row.snapshot.sourceLines) + "（較前一日 " + signed(row.sourceDelta) + "）");
+    lines.push("快照：" + row.snapshot.shortCommit + " " + row.snapshot.subject);
+    return lines.join("\n");
+  }
+
+  function signed(value) {
+    return (value >= 0 ? "+" : "") + fmt(value);
+  }
+
+  function renderOverview(svg) {
+    const active = state.overview;
+    const width = 1120, height = 720;
+    const margin = { top: 74, right: 34, bottom: 80, left: 82 };
+    const rows = data.rows;
+    const activeSeries = overviewSeries.filter((item) => active.has(item.key));
+    const panelCount = Math.max(1, activeSeries.length);
+    const plotW = width - margin.left - margin.right;
+    const panelGap = 56;
+    const panelH = (height - margin.top - margin.bottom - panelGap * (panelCount - 1)) / panelCount;
+    const xStep = plotW / Math.max(1, rows.length - 1);
+    const x = (i) => margin.left + i * xStep;
+    let html = '<rect class="chart-bg" x="0" y="0" width="' + width + '" height="' + height + '" rx="10"></rect>';
+    html += '<g class="legend" transform="translate(' + margin.left + ',34)">' + overviewSeries.map((item, i) => legendItem(item, active.has(item.key), i * 248, 0, 226)).join("") + '</g>';
+    if (activeSeries.length === 0) activeSeries.push(overviewSeries[0]);
+    activeSeries.forEach((series, panelIndex) => {
+      const top = margin.top + panelIndex * (panelH + panelGap);
+      const values = rows.map((row) => series.key === "daily-commits" ? row.commits : series.key === "cumulative-commits" ? row.cumulativeCommits : row.snapshot.sourceLines);
+      const maxY = max(values);
+      const tickValues = ticks(maxY, 3);
+      const axisMax = tickValues.at(-1) || maxY;
+      const y = (value) => top + panelH - (value / axisMax) * panelH;
+      html += '<rect class="plot-bg" x="' + margin.left + '" y="' + top + '" width="' + plotW + '" height="' + panelH + '" rx="8"></rect>';
+      html += tickValues.map((tick) => '<line class="grid" x1="' + margin.left + '" y1="' + y(tick) + '" x2="' + (width - margin.right) + '" y2="' + y(tick) + '"></line><text class="axis-label" x="' + (margin.left - 12) + '" y="' + (y(tick) + 4) + '" text-anchor="end">' + fmt(tick) + '</text>').join("");
+      html += '<text class="axis-title" x="' + margin.left + '" y="' + (top - 18) + '">' + esc(series.label) + '</text>';
+      if (series.kind === "bar") {
+        const barW = Math.min(38, Math.max(12, xStep * 0.42));
+        html += rows.map((row, i) => {
+          const value = row.commits;
+          const yPos = y(value);
+          return '<rect class="chart-mark bar" data-series="' + series.key + '" ' + attrs(row.date, row.date, tooltipBody(row, active)) + ' x="' + (x(i) - barW / 2) + '" y="' + yPos + '" width="' + barW + '" height="' + (top + panelH - yPos) + '" fill="' + series.color + '"></rect>';
+        }).join("");
+      } else {
+        const points = rows.map((row, i) => {
+          const value = series.key === "cumulative-commits" ? row.cumulativeCommits : row.snapshot.sourceLines;
+          return x(i) + "," + y(value);
+        }).join(" ");
+        html += '<polyline class="chart-mark series-line" data-series="' + series.key + '" points="' + points + '" stroke="' + series.color + '"></polyline>';
+        html += rows.map((row, i) => {
+          const value = series.key === "cumulative-commits" ? row.cumulativeCommits : row.snapshot.sourceLines;
+          return '<circle class="chart-mark dot" data-series="' + series.key + '" ' + attrs(row.date, row.date, tooltipBody(row, active)) + ' cx="' + x(i) + '" cy="' + y(value) + '" r="4.5" fill="' + series.color + '"></circle>';
+        }).join("");
+      }
+    });
+    html += rows.map((row, i) => dateLabel(x(i), height - 34, row.date)).join("");
+    html += rows.map((row, i) => '<rect class="hover-band" ' + attrs(row.date, row.date, tooltipBody(row, active)) + ' tabindex="0" aria-label="' + attr(row.date + " 成長資料") + '" x="' + (x(i) - xStep * 0.4) + '" y="' + margin.top + '" width="' + xStep * 0.8 + '" height="' + (height - margin.top - margin.bottom) + '"></rect>').join("");
+    svg.innerHTML = html;
+  }
+
+  function categoryTooltip(row, active) {
+    const visibleTotal = data.visibleCategoryOrder.filter((key) => active.has(key)).reduce((sum, key) => sum + row.snapshot.categories[key], 0);
+    const lines = data.visibleCategoryOrder.filter((key) => active.has(key)).map((key) => data.categoryLabels[key] + ": " + fmt(row.snapshot.categories[key]) + "（較前一日 " + signed(row.categoryDeltas[key]) + "）");
+    lines.push("顯示中非空行: " + fmt(visibleTotal));
+    lines.push("原始全部文字非空行: " + fmt(row.snapshot.textLines));
+    lines.push("快照：" + row.snapshot.shortCommit + " " + row.snapshot.subject);
+    return lines.join("\n");
+  }
+
+  function renderCategories(svg) {
+    const active = state.categories;
+    const width = 1120, height = 520;
+    const margin = { top: 78, right: 32, bottom: 76, left: 82 };
+    const rows = data.rows;
+    const plotW = width - margin.left - margin.right;
+    const plotH = height - margin.top - margin.bottom;
+    const xStep = plotW / Math.max(1, rows.length - 1);
+    const x = (i) => margin.left + i * xStep;
+    const totals = rows.map((row) => data.visibleCategoryOrder.filter((key) => active.has(key)).reduce((sum, key) => sum + row.snapshot.categories[key], 0));
+    const maxY = max(totals);
+    const tickValues = ticks(maxY, 5);
+    const axisMax = tickValues.at(-1) || maxY;
+    const y = (value) => margin.top + plotH - (value / axisMax) * plotH;
+    let html = '<rect class="chart-bg" x="0" y="0" width="' + width + '" height="' + height + '" rx="10"></rect>';
+    html += '<g class="legend wrapped" transform="translate(' + margin.left + ',30)">' + data.visibleCategoryOrder.map((key, i) => {
+      const item = { key, label: data.categoryLabels[key], color: data.categoryColors[key], kind: "rect" };
+      return legendItem(item, active.has(key), (i % 4) * 230, Math.floor(i / 4) * 24, 210);
+    }).join("") + '</g>';
+    html += tickValues.map((tick) => '<line class="grid" x1="' + margin.left + '" y1="' + y(tick) + '" x2="' + (width - margin.right) + '" y2="' + y(tick) + '"></line><text class="axis-label" x="' + (margin.left - 12) + '" y="' + (y(tick) + 4) + '" text-anchor="end">' + fmt(tick) + '</text>').join("");
+    let lower = rows.map(() => 0);
+    for (const key of data.visibleCategoryOrder) {
+      if (!active.has(key)) continue;
+      const upper = lower.map((value, i) => value + rows[i].snapshot.categories[key]);
+      const upperPoints = upper.map((value, i) => x(i) + "," + y(value)).join(" ");
+      const lowerPoints = lower.map((value, i) => x(i) + "," + y(value)).reverse().join(" ");
+      html += '<polygon class="area chart-mark" data-series="' + attr(key) + '" points="' + upperPoints + ' ' + lowerPoints + '" fill="' + data.categoryColors[key] + '"></polygon>';
+      lower = upper;
+    }
+    html += rows.map((row, i) => dateLabel(x(i), height - 34, row.date)).join("");
+    html += '<text class="axis-title" x="22" y="' + (margin.top + 12) + '" transform="rotate(-90 22 ' + (margin.top + 12) + ')">非空行數</text>';
+    html += rows.map((row, i) => '<rect class="hover-band" ' + attrs(row.date, row.date, categoryTooltip(row, active)) + ' tabindex="0" aria-label="' + attr(row.date + " 文字行數分類") + '" x="' + (x(i) - xStep * 0.4) + '" y="' + margin.top + '" width="' + xStep * 0.8 + '" height="' + plotH + '"></rect>').join("");
+    svg.innerHTML = html;
+  }
+
+  function commitTooltip(row, active) {
+    const visibleTotal = data.commitTypeOrder.filter((key) => active.has(key)).reduce((sum, key) => sum + row.types[key], 0);
+    const lines = data.commitTypeOrder.filter((key) => active.has(key) && row.types[key] > 0).map((key) => key + ": " + fmt(row.types[key]));
+    lines.push("顯示中 commit 數: " + fmt(visibleTotal));
+    lines.push("原始當日 commit 數: " + fmt(row.commits) + "（較前一日 " + signed(row.commitDelta) + "）");
+    return lines.join("\n");
+  }
+
+  function renderCommitTypes(svg) {
+    const active = state["commit-types"];
+    const width = 1120, height = 460;
+    const margin = { top: 78, right: 32, bottom: 76, left: 74 };
+    const rows = data.rows;
+    const plotW = width - margin.left - margin.right;
+    const plotH = height - margin.top - margin.bottom;
+    const barSlot = plotW / rows.length;
+    const barW = Math.min(56, Math.max(18, barSlot * 0.56));
+    const totals = rows.map((row) => data.commitTypeOrder.filter((key) => active.has(key)).reduce((sum, key) => sum + row.types[key], 0));
+    const maxY = max(totals);
+    const tickValues = ticks(maxY, 4);
+    const axisMax = tickValues.at(-1) || maxY;
+    const y = (value) => margin.top + plotH - (value / axisMax) * plotH;
+    let html = '<rect class="chart-bg" x="0" y="0" width="' + width + '" height="' + height + '" rx="10"></rect>';
+    html += '<g class="legend wrapped" transform="translate(' + margin.left + ',30)">' + data.commitTypeOrder.map((key, i) => {
+      const item = { key, label: key, color: data.commitTypeColors[key], kind: "rect" };
+      return legendItem(item, active.has(key), (i % 5) * 150, Math.floor(i / 5) * 24, 132);
+    }).join("") + '</g>';
+    html += tickValues.map((tick) => '<line class="grid" x1="' + margin.left + '" y1="' + y(tick) + '" x2="' + (width - margin.right) + '" y2="' + y(tick) + '"></line><text class="axis-label" x="' + (margin.left - 12) + '" y="' + (y(tick) + 4) + '" text-anchor="end">' + fmt(tick) + '</text>').join("");
+    html += rows.map((row, i) => {
+      const xPos = margin.left + i * barSlot + (barSlot - barW) / 2;
+      let used = 0;
+      return data.commitTypeOrder.map((key) => {
+        const value = active.has(key) ? row.types[key] : 0;
+        if (value === 0) return "";
+        const top = y(used + value);
+        const h = y(used) - top;
+        used += value;
+        return '<rect class="chart-mark bar" data-series="' + attr(key) + '" ' + attrs(row.date, row.date + " · " + key, commitTooltip(row, active)) + ' x="' + xPos + '" y="' + top + '" width="' + barW + '" height="' + h + '" fill="' + data.commitTypeColors[key] + '"></rect>';
+      }).join("");
+    }).join("");
+    html += rows.map((row, i) => dateLabel(margin.left + i * barSlot + barSlot / 2, height - 34, row.date)).join("");
+    html += '<text class="axis-title" x="22" y="' + (margin.top + 12) + '" transform="rotate(-90 22 ' + (margin.top + 12) + ')">每日 commit 數</text>';
+    html += rows.map((row, i) => '<rect class="hover-band" ' + attrs(row.date, row.date, commitTooltip(row, active)) + ' tabindex="0" aria-label="' + attr(row.date + " commit 類型") + '" x="' + (margin.left + i * barSlot + barSlot * 0.1) + '" y="' + margin.top + '" width="' + (barSlot * 0.8) + '" height="' + plotH + '"></rect>').join("");
+    svg.innerHTML = html;
+  }
+
+  function clearDateHover(chart) {
+    if (!chart) return;
+    chart.classList.remove("has-date-hover");
+    chart.querySelectorAll(".is-date-hovered").forEach((node) => node.classList.remove("is-date-hovered"));
+  }
+  function clearSeriesHover(chart) {
+    if (!chart) return;
+    chart.classList.remove("has-series-hover");
+    chart.querySelectorAll(".is-series-hovered").forEach((node) => node.classList.remove("is-series-hovered"));
+    chart.querySelectorAll(".is-legend-hovered").forEach((node) => node.classList.remove("is-legend-hovered"));
+  }
+  function renderChart(svg) {
+    clearDateHover(svg);
+    clearSeriesHover(svg);
+    tooltip.classList.remove("is-visible");
+    if (svg.dataset.chart === "overview") renderOverview(svg);
+    if (svg.dataset.chart === "categories") renderCategories(svg);
+    if (svg.dataset.chart === "commit-types") renderCommitTypes(svg);
+  }
+  function renderAll() {
+    document.querySelectorAll(".chart[data-chart]").forEach(renderChart);
+  }
+  function positionTooltip(point) {
+    const offset = 14;
+    let left = point.clientX + offset;
+    let top = point.clientY + offset;
+    const rect = tooltip.getBoundingClientRect();
+    if (left + rect.width > window.innerWidth - 8) left = point.clientX - rect.width - offset;
+    if (top + rect.height > window.innerHeight - 8) top = point.clientY - rect.height - offset;
+    tooltip.style.left = Math.max(8, left) + "px";
+    tooltip.style.top = Math.max(8, top) + "px";
+  }
+  function showTooltip(target, point) {
+    tooltip.replaceChildren();
+    const title = document.createElement("div");
+    title.className = "chart-tooltip-title";
+    title.textContent = target.dataset.tooltipTitle || "";
+    const body = document.createElement("div");
+    body.className = "chart-tooltip-body";
+    body.textContent = target.dataset.tooltipBody || "";
+    tooltip.append(title, body);
+    tooltip.classList.add("is-visible");
+    positionTooltip(point);
+  }
+  function activateDate(target, point) {
+    const chart = target.closest(".chart");
+    clearDateHover(chart);
+    chart.classList.add("has-date-hover");
+    chart.querySelectorAll("[data-date]").forEach((node) => {
+      if (node.dataset.date === target.dataset.date) node.classList.add("is-date-hovered");
+    });
+    showTooltip(target, point);
+  }
+  function activateSeries(item) {
+    const chart = item.closest(".chart");
+    clearSeriesHover(chart);
+    chart.classList.add("has-series-hover");
+    item.classList.add("is-legend-hovered");
+    chart.querySelectorAll("[data-series]").forEach((node) => {
+      if (node.dataset.series === item.dataset.legendSeries) node.classList.add("is-series-hovered");
+    });
+  }
+  function toggleSeries(item, solo = false) {
+    const chart = item.closest(".chart");
+    const active = state[chart.dataset.chart];
+    const series = item.dataset.legendSeries;
+    if (solo) {
+      active.clear();
+      active.add(series);
+    } else if (active.has(series)) active.delete(series);
+    else active.add(series);
+    renderChart(chart);
+  }
+  function focusPoint(target) {
+    const rect = target.getBoundingClientRect();
+    return { clientX: rect.left + rect.width / 2, clientY: rect.top + Math.min(24, rect.height / 2) };
+  }
+  document.addEventListener("pointerover", (event) => {
+    const legend = event.target.closest(".legend-item");
+    if (legend && !legend.contains(event.relatedTarget)) activateSeries(legend);
+    const target = event.target.closest("[data-tooltip-title]");
+    if (target && target.closest(".chart") && !target.contains(event.relatedTarget)) activateDate(target, event);
+  });
+  document.addEventListener("pointermove", (event) => {
+    if (tooltip.classList.contains("is-visible")) positionTooltip(event);
+  });
+  document.addEventListener("pointerout", (event) => {
+    const legend = event.target.closest(".legend-item");
+    if (legend && !legend.contains(event.relatedTarget)) clearSeriesHover(legend.closest(".chart"));
+    const target = event.target.closest("[data-tooltip-title]");
+    if (target && target.closest(".chart") && !target.contains(event.relatedTarget)) {
+      clearDateHover(target.closest(".chart"));
+      tooltip.classList.remove("is-visible");
+    }
+  });
+  document.addEventListener("focusin", (event) => {
+    const legend = event.target.closest(".legend-item");
+    if (legend) activateSeries(legend);
+    const target = event.target.closest("[data-tooltip-title]");
+    if (target && target.closest(".chart")) activateDate(target, focusPoint(target));
+  });
+  document.addEventListener("focusout", (event) => {
+    const legend = event.target.closest(".legend-item");
+    if (legend) clearSeriesHover(legend.closest(".chart"));
+    const target = event.target.closest("[data-tooltip-title]");
+    if (target && target.closest(".chart")) {
+      clearDateHover(target.closest(".chart"));
+      tooltip.classList.remove("is-visible");
+    }
+  });
+  document.addEventListener("click", (event) => {
+    const item = event.target.closest(".legend-item");
+    if (!item) return;
+    toggleSeries(item, event.detail === 2);
+  });
+  document.addEventListener("keydown", (event) => {
+    const item = event.target.closest(".legend-item");
+    if (event.key === "Escape") {
+      state.overview = new Set(["daily-commits", "cumulative-commits", "source-lines"]);
+      state.categories = new Set(data.visibleCategoryOrder);
+      state["commit-types"] = new Set(data.commitTypeOrder);
+      renderAll();
+      return;
+    }
+    if (!item || (event.key !== "Enter" && event.key !== " ")) return;
+    event.preventDefault();
+    toggleSeries(item);
+  });
+  renderAll();
+})();
+</script>
+</body>
+</html>

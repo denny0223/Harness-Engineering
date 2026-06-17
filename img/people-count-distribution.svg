@@ -1,0 +1,34 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1040 420" role="img" aria-label="照片人數分布圖">
+  <rect x="0" y="0" width="1040" height="420" fill="#ffffff"/>
+  <text x="32" y="42" font-size="28" font-family="Noto Sans TC, PingFang TC, Microsoft JhengHei, sans-serif" fill="#222">照片人數分布：中段值異常集中</text>
+  <line x1="80" y1="340" x2="960" y2="340" stroke="#333" stroke-width="2"/>
+  <line x1="80" y1="82" x2="80" y2="340" stroke="#333" stroke-width="2"/>
+  <line x1="80" y1="255" x2="960" y2="255" stroke="#d9480f" stroke-width="2" stroke-dasharray="8 8"/>
+  <text x="770" y="245" font-size="18" font-family="Noto Sans TC, PingFang TC, Microsoft JhengHei, sans-serif" fill="#d9480f">審查門檻</text>
+
+  <rect x="120" y="296" width="50" height="44" fill="#7aa6c2"/>
+  <rect x="205" y="278" width="50" height="62" fill="#7aa6c2"/>
+  <rect x="290" y="292" width="50" height="48" fill="#7aa6c2"/>
+  <rect x="375" y="282" width="50" height="58" fill="#7aa6c2"/>
+  <rect x="460" y="288" width="50" height="52" fill="#7aa6c2"/>
+  <rect x="545" y="112" width="50" height="228" fill="#d9480f"/>
+  <rect x="630" y="290" width="50" height="50" fill="#7aa6c2"/>
+  <rect x="715" y="302" width="50" height="38" fill="#7aa6c2"/>
+  <rect x="800" y="306" width="50" height="34" fill="#7aa6c2"/>
+  <rect x="885" y="314" width="50" height="26" fill="#7aa6c2"/>
+
+  <text x="145" y="370" font-size="18" text-anchor="middle" font-family="Noto Sans TC, PingFang TC, Microsoft JhengHei, sans-serif">0</text>
+  <text x="230" y="370" font-size="18" text-anchor="middle" font-family="Noto Sans TC, PingFang TC, Microsoft JhengHei, sans-serif">1</text>
+  <text x="315" y="370" font-size="18" text-anchor="middle" font-family="Noto Sans TC, PingFang TC, Microsoft JhengHei, sans-serif">2</text>
+  <text x="400" y="370" font-size="18" text-anchor="middle" font-family="Noto Sans TC, PingFang TC, Microsoft JhengHei, sans-serif">3</text>
+  <text x="485" y="370" font-size="18" text-anchor="middle" font-family="Noto Sans TC, PingFang TC, Microsoft JhengHei, sans-serif">4</text>
+  <text x="570" y="370" font-size="18" text-anchor="middle" font-family="Noto Sans TC, PingFang TC, Microsoft JhengHei, sans-serif">5</text>
+  <text x="655" y="370" font-size="18" text-anchor="middle" font-family="Noto Sans TC, PingFang TC, Microsoft JhengHei, sans-serif">6</text>
+  <text x="740" y="370" font-size="18" text-anchor="middle" font-family="Noto Sans TC, PingFang TC, Microsoft JhengHei, sans-serif">7</text>
+  <text x="825" y="370" font-size="18" text-anchor="middle" font-family="Noto Sans TC, PingFang TC, Microsoft JhengHei, sans-serif">8</text>
+  <text x="910" y="370" font-size="18" text-anchor="middle" font-family="Noto Sans TC, PingFang TC, Microsoft JhengHei, sans-serif">9</text>
+
+  <text x="570" y="98" font-size="23" text-anchor="middle" font-family="Noto Sans TC, PingFang TC, Microsoft JhengHei, sans-serif" fill="#d9480f">5 過度集中</text>
+  <text x="520" y="402" font-size="18" text-anchor="middle" font-family="Noto Sans TC, PingFang TC, Microsoft JhengHei, sans-serif" fill="#555">照片中的人數</text>
+  <text x="32" y="88" font-size="18" font-family="Noto Sans TC, PingFang TC, Microsoft JhengHei, sans-serif" fill="#555">比例</text>
+</svg>
