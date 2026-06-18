@@ -1,5 +1,5 @@
 ---
-title: AI Native 時代我居然還想教學生軟體開發生命週期，到底是哪裡出了問題？
+title: AI 世代，有了 Harness，還需要軟體工程嗎？
 description:
 author: Denny Huang
 keywords: AI Native, 軟體開發生命週期, SDLC, DevOps, Continuous Integration, CI, Harness
@@ -34,14 +34,14 @@ paginate: true
 }
 </style>
 
-# AI Native 時代我居然還想教學生軟體開發生命週期，到底是哪裡出了問題？
+# AI 世代，有了 Harness，還需要軟體工程嗎？
 
 <br />
 <br />
 <br />
 
 ## Denny Huang
-### 2026/06/17
+### 2026/06/18
 
 ---
 
@@ -95,6 +95,21 @@ paginate: true
 
 ---
 
+# 使用情境：志工招募貼文
+![h:500px](./img/finder-use-case-volunteer-recruit.png)
+
+---
+
+# 使用情境：展示會議廳空間
+![h:500px](./img/finder-use-case-conference-room.png)
+
+---
+
+# 使用情境：[可分享連結](https://sitcon.org/flickr-photo-finder/?sort=people-asc&selected=25078675068%2C34239692452%2C34356401176)利於挑選照片討論
+![w:1100px](./img/shareable-link.png)
+
+---
+
 # [SITCON Flickr Photo Finder](https://sitcon.org/flickr-photo-finder/)
 ![h:400px](./img/finder.png) ![h:400px](./img/finder-sheet-panel.png)
 
@@ -111,20 +126,6 @@ paginate: true
 
 ![h:500px](./img/codex-outsourced-to-claude.png)
 
----
-
-# 使用情境：志工招募貼文
-![h:500px](./img/finder-use-case-volunteer-recruit.png)
-
----
-
-# 使用情境：展示會議廳空間
-![h:500px](./img/finder-use-case-conference-room.png)
-
----
-
-# 使用情境：[可分享連結](https://sitcon.org/flickr-photo-finder/?sort=people-asc&selected=25078675068%2C34239692452%2C34356401176)利於挑選照片討論
-![w:1100px](./img/shareable-link.png)
 
 ---
 
