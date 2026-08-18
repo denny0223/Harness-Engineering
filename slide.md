@@ -82,6 +82,7 @@ paginate: true
 - AI 如何在各軟體開發生命週期中發揮作用
 - 完成開發，繼續添加需求，體驗軟體的演化
 - 組別交換專案，繼續添加功能；體驗軟體專案的人際協作
+- [課堂成果報告](https://denny.one/SITCON-Camp-2026-SE/report/)
 
 ---
 
@@ -326,6 +327,15 @@ flowchart LR
 
 要，而且更需要。
 因為 AI 讓產出變快，也讓判斷、邊界、交接、驗證變得更重要。
+
+---
+
+# 課程結束，實際效果如何？
+
+- [成果報告](https://denny.one/SITCON-Camp-2026-SE/report/)
+- [學員成果](https://sitcon-camp-2026.github.io/t3-m4-se-disaster/)
+- [投影片](https://denny.one/SITCON-Camp-2026-SE/)
+- [專案起始頁](https://sitcon.org/camp2026-se-disaster-starter/)
 
 ---
 
